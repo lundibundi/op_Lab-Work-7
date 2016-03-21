@@ -7,31 +7,40 @@
 #include <iostream>
 
 char* read_line();
-void parse_string(char* input, const char& beg, const char& end);
+char* clean_repeat(char* string, bool clean_n);
+void parse_string(char* input, const char* beg, const char* end);
+char* str_to_contains(char* string, bool del, bool clean_n);
+void parse_string_e(char* input, const char beg[256], const char end[256]);
 
 int lab7()
 {
+
 	// read input
-	char beg, end;
-	std::cout << "enter beginning character: ";
-	std::cin >> beg;
-	std::cout << "enter ending character: ";
-	std::cin >> end;
+	char *beg, *end;
+	std::cout << "enter beginning characters: ";
+//	beg = clean_repeat(read_line(), true);
+	beg = str_to_contains(read_line(), true, true);
+	std::cout << "enter ending characters: ";
+	end = str_to_contains(read_line(), true, true);
+//	end = clean_repeat(read_line(), true);
 	std::cout << "enter string: ";
 
 	// ignore all that's left after previous input
-	std::cin.ignore(INT_MAX, '\n');
 	char* input = read_line();
 
 	// parse string
-	parse_string(input, beg, end);
+//	parse_string(input, beg, end);
+	parse_string_e(input, beg, end);
 
 	delete[] input;
+	delete[] end;
+	delete[] beg;
+
 	_getch();
 	return 0;
 }
 
-void parse_string(char* input, const char& beg, const char& end)
+void parse_string(char* input, const char* beg, const char* end)
 {
 	int len = strlen(input);
 	if (input[len - 1] == '\n') input[len - 1] = '\0';
@@ -41,12 +50,44 @@ void parse_string(char* input, const char& beg, const char& end)
 	char* word = strtok_s(input, dels, &token);
 	while (word != NULL)
 	{
-		if (*word == beg && word[strlen(word) - 1] == end)
+		if (strchr(beg, *word) && strchr(end, word[strlen(word) - 1]))
 		{
 			std::cout << word << std::endl;
 		}
 		word = strtok_s(NULL, dels, &token);
 	}
+}
+
+// beg and eng must be of length 256 and contain 1->true on characters that are present
+void parse_string_e(char* input, const char beg[256], const char end[256])
+{
+	int len = strlen(input);
+	if (input[len - 1] == '\n') input[len - 1] = '\0';
+
+	const char* dels = " ,.-";
+	char* token = NULL;
+	char* word = strtok_s(input, dels, &token);
+	while (word != NULL)
+	{
+		if (beg[*word] && end[word[strlen(word) - 1]])
+		{
+			std::cout << word << std::endl;
+		}
+		word = strtok_s(NULL, dels, &token);
+	}
+}
+
+char* str_to_contains(char* string, bool del = false, bool clean_n = false)
+{
+	size_t len = strlen(string);
+	char* seen = new char[256]{0};
+	for (int i = 0; i < len; ++i)
+	{
+		seen[(unsigned)string[i]] = 1;
+	}
+	if (clean_n) seen[(unsigned) '\n'] = 0;
+	if (del) delete[] string;
+	return seen;
 }
 
 char* read_line()
